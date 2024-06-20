@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-git init
+#git init
 git add *
 git add .dockerignore .github/workflows/docker-image.yml
 
