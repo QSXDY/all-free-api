@@ -4,6 +4,7 @@ jsonpath
 fastapi
 uvicorn
 sse_starlette
+gunicorn
 
 openai
 tiktoken
