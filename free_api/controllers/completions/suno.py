@@ -15,6 +15,23 @@ from meutils.pipe import *
 from meutils.schemas.openai_types import ChatCompletionRequest
 from meutils.schemas.suno_types import SunoAIRequest
 
+template = """
+```json
+{
+    "prompt": "",
+    "gpt_description_prompt": "写首中国风的歌曲",
+    "title": "",
+    "tags": "",
+    "continue_at": null,
+    "continue_clip_id": null,
+    "infill_start_s": null,
+    "infill_end_s": null,
+    "make_instrumental": false,
+    "mv": "chirp-v3-5"
+}
+```
+"""
+
 
 class Completions(object):
 
@@ -27,7 +44,7 @@ class Completions(object):
             task_info = await generate_music(self.api_key, SunoAIRequest(**data).model_dump())  # 阻塞执行，奇怪？
             return create_chunks(task_info)
 
-        return '请按照规定格式提交任务（未知错误联系管理员）'
+        return f"请按照规定格式提交任务（未知错误联系管理员）\n\n {template}"
 
 
 async def generate_music(api_key, payload):
