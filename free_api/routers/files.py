@@ -39,13 +39,6 @@ async def get_files(
         auth: Optional[HTTPAuthorizationCredentials] = Depends(get_bearer_token),
 ):
     api_key = auth and auth.credentials or None
-    if api_key is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="认证失败")
-
-    try:
-        _ = per_create(api_key=api_key)  # 按次计费
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
     return client.files.list()
 
@@ -57,12 +50,6 @@ async def get_file(
 
 ):
     api_key = auth and auth.credentials or None
-    if api_key is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="认证失败")
-    try:
-        _ = per_create(api_key=api_key)  # 按次计费
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
     return client.files.retrieve(file_id=file_id)
 
@@ -74,12 +61,7 @@ async def get_file_content(
 
 ):
     api_key = auth and auth.credentials or None
-    if api_key is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="认证失败")
-    try:
-        _ = per_create(api_key=api_key)  # 按次计费
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    await appu("ppu-1", api_key)  # 计费
 
     file_content = client.files.content(file_id=file_id).text
     return Response(content=file_content, media_type="application/octet-stream")
@@ -91,13 +73,6 @@ async def delete_file(
         auth: Optional[HTTPAuthorizationCredentials] = Depends(get_bearer_token),
 ):
     api_key = auth and auth.credentials or None
-    if api_key is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="认证失败")
-
-    try:
-        _ = per_create(api_key=api_key)  # 按次计费
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
     return client.files.delete(file_id=file_id)
 
@@ -111,17 +86,8 @@ async def upload_files(
 
 ):
     api_key = auth and auth.credentials or None
-    if api_key is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="认证失败")
 
-    try:
-        _ = per_create(api_key=api_key, model='per-file')  # 按次计费
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-
-    # kimi官方api
-    if 'kimi-api':
-        file_object = client.files.create(file=(file.filename, file.file), purpose="file-extract")
+    file_object = client.files.create(file=(file.filename, file.file), purpose="file-extract")
 
     return file_object
 
