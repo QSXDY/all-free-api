@@ -1,5 +1,4 @@
 meutils
-jsonpath
 
 fastapi
 uvicorn
@@ -13,3 +12,6 @@ websocket
 
 minio
 redis
+
+jsonpath
+json_repair
