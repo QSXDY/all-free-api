@@ -33,4 +33,5 @@ USER appuser
 # 容器启动时运行命令
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]
 
+CMD  ["python",  "-m",  "meutils.clis.server",  "gunicorn-run",  "main:app",  "--port",  "8000",  "--workers",  "3",  "--threads",  "2",  "--timeout",  "100"]
 

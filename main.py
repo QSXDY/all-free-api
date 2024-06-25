@@ -9,11 +9,14 @@
 # @Description  :
 
 from meutils.serving.fastapi import App
-from free_api.routers import chat_yuanbao
+from free_api.routers import chat_yuanbao, polling_openai_api_keys
+from free_api.routers import chat_suno
 
 app = App()
 
 app.include_router(chat_yuanbao.router, '/yuanbao/v1')
+app.include_router(polling_openai_api_keys.router, '/polling/v1')
+app.include_router(chat_suno.router, '/suno/v1')
 
 if __name__ == '__main__':
     app.run()
