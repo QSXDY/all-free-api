@@ -10,3 +10,5 @@ openai
 tiktoken
 langchain
 websocket
+
+minio

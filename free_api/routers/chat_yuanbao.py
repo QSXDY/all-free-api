@@ -11,14 +11,13 @@
 from meutils.pipe import *
 from meutils.notice.feishu import send_message
 from meutils.serving.fastapi.dependencies.auth import get_bearer_token, HTTPAuthorizationCredentials
+from meutils.schemas.openai_types import ChatCompletionRequest
 
 from fastapi import APIRouter, File, UploadFile, Query, Form, Depends, Request, HTTPException, status
 from sse_starlette import EventSourceResponse
-
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
 from free_api.controllers.completions.yuanbao import Completions
-from meutils.schemas.openai_types import ChatCompletionRequest
 
 router = APIRouter()
 
