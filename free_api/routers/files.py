@@ -68,9 +68,14 @@ async def get_file_content(
 
 ):
     api_key = auth and auth.credentials or None
-    await appu("ppu-1", api_key)  # 计费
 
-    file_content = client.files.content(file_id=file_id).text
+    if Purpose.textin_fileparser in file_id:
+        file_content = await redis_aclient.get(file_id)
+    else:
+
+        file_content = client.files.content(file_id=file_id).text
+
+    await appu("ppu-1", api_key)  # 计费
     return Response(content=file_content, media_type="application/octet-stream")
 
 
@@ -116,12 +121,14 @@ async def upload_files(
 
         # logger.debug(f"file-{file_object.purpose}:{file_object.id}")
         if markdown_text:
-            await redis_aclient.set(f"file:{file_object.purpose}-{file_object.id}", markdown_text, ex=3600 * 24 * 7)
+            file_object.id = f"file:{file_object.purpose}-{file_object.id}"
+            await redis_aclient.set(file_object.id, markdown_text, ex=3600 * 24 * 7)
 
     else:  # 其他走 kimi
 
-        file_object = client.files.create(file=(file.filename, file.file), purpose="assistants")
+        file_object = client.files.create(file=(file.filename, file.file), purpose="file-extract")
 
+    await appu("ppu-001", api_key)  # 计费
     return file_object
 
 
