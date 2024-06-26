@@ -8,10 +8,13 @@
 # @Software     : PyCharm
 # @Description  : TODO
 
+import jsonpath
 
 from meutils.pipe import *
-from meutils.serving.fastapi.dependencies.auth import get_bearer_token, HTTPAuthorizationCredentials
+from meutils.db.redis_db import redis_aclient
 from meutils.llm.openai_utils import appu
+from meutils.apis.textin import textin_fileparser
+from meutils.serving.fastapi.dependencies.auth import get_bearer_token, HTTPAuthorizationCredentials
 
 from enum import Enum
 from openai import OpenAI
@@ -29,6 +32,10 @@ client = OpenAI(
 
 
 class Purpose(str, Enum):
+    # 文档智能
+    moonshot_fileparser = "moonshot-fileparser"
+    textin_fileparser = "textin-fileparser"
+
     file_extract = "file-extract"
     assistants = "assistants"
     fine_tune = "fine-tune"
@@ -87,7 +94,33 @@ async def upload_files(
 ):
     api_key = auth and auth.credentials or None
 
-    file_object = client.files.create(file=(file.filename, file.file), purpose="file-extract")
+    if purpose == purpose.textin_fileparser:
+
+        response_data = await textin_fileparser(file.file.read())
+        markdown_text = jsonpath.jsonpath(response_data, "$..markdown")  # False or []
+        markdown_text = markdown_text and markdown_text[0]
+
+        file_object = FileObject.construct(
+
+            filename=file.filename,  # result.get("file_name")
+            bytes=file.size,
+
+            id=shortuuid.random(),
+            created_at=int(time.time()),
+            object='file',
+
+            purpose=purpose,
+            status="processed" if markdown_text else "error",
+            status_details=response_data
+        )
+
+        # logger.debug(f"file-{file_object.purpose}:{file_object.id}")
+        if markdown_text:
+            await redis_aclient.set(f"file:{file_object.purpose}-{file_object.id}", markdown_text, ex=3600 * 24 * 7)
+
+    else:  # 其他走 kimi
+
+        file_object = client.files.create(file=(file.filename, file.file), purpose="assistants")
 
     return file_object
 
