@@ -1,4 +1,4 @@
-# 商业版联系313303303
+# 免费
 
 ```
 NAME=docker.1panel.live/chatfire/all-free-api
