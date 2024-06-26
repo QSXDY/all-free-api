@@ -39,9 +39,16 @@ class Completions(object):
         self.api_key = api_key
 
     async def acreate(self, request: ChatCompletionRequest):
+        if request.model.startswith("suno-chat"):
+            payload = SunoAIRequest(gpt_description_prompt=request.last_content).model_dump()
+
+            task_info = await generate_music(self.api_key, payload)
+            return create_chunks(task_info)
+
         data = json_repair.repair_json(f"{{{request.last_content}}}", return_objects=True)
         if isinstance(data, dict) and data:
-            task_info = await generate_music(self.api_key, SunoAIRequest(**data).model_dump())  # 阻塞执行，奇怪？
+            payload = SunoAIRequest(**data).model_dump()
+            task_info = await generate_music(self.api_key, payload)  # 阻塞执行，奇怪？
             return create_chunks(task_info)
 
         return f"请按照规定格式提交任务（未知错误联系管理员）\n\n {template}"
@@ -99,11 +106,6 @@ def music_info(df):
 async def create_chunks(task_info):
     task_id = task_info.get('id', 'task_id')
     music_ids = jsonpath.jsonpath(task_info, "$.clips..id") | xjoin(',')
-
-    """
-    /task/music/v1/tasks/{task_id}
-/task/music/v1/music/{music_ids}
-    """
 
     yield "✅开始生成音乐\n\n"
 
